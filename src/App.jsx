@@ -1,122 +1,99 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import { useWeather } from "./hooks/useWeather";
+import { SearchBar } from "./components/searchBar";
+import { RecentCities } from "./components/recentCities";
+import { CurrentWeatherCard } from "./components/currentWeatherCard";
+import { ForecastList } from "./components/forecastList";
+import { TemperatureChart } from "./components/temperatureChart";
+import { LoadingState } from "./components/loadingState";
+import { ErrorState } from "./components/errorState";
+import { getRecentCities, addRecentCity } from "./utils/recentCities";
+import { getInitialDarkMode, applyDarkMode } from "./utils/darkMode";
+
+const DEFAULT_CITY = "Lyon";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // `location` peut être une ville (string) ou des coordonnées { lat, lon }
+  const [location, setLocation] = useState(null);
+  const [unit, setUnit] = useState("metric");
+  const [recentCities, setRecentCities] = useState([]);
+  const [isDark, setIsDark] = useState(getInitialDarkMode);
+  const { data, loading, error } = useWeather(location, unit);
+
+  useEffect(() => {
+    applyDarkMode(isDark);
+  }, [isDark]);
+
+  useEffect(() => {
+    setRecentCities(getRecentCities());
+
+    if (!navigator.geolocation) {
+      setLocation(DEFAULT_CITY);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        });
+      },
+      () => {
+        setLocation(DEFAULT_CITY);
+      },
+      { timeout: 5000 }
+    );
+  }, []);
+
+  function handleSearch(city) {
+    setLocation(city);
+    setRecentCities(addRecentCity(city));
+  }
+
+  function toggleUnit() {
+    setUnit((prev) => (prev === "metric" ? "imperial" : "metric"));
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+      <div className="max-w-xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            Météo
+          </h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleUnit}
+              className="text-sm border dark:border-gray-700 rounded-lg px-3 py-1 text-gray-900 dark:text-gray-100"
+            >
+              {unit === "metric" ? "°C" : "°F"}
+            </button>
+            <button
+              onClick={() => setIsDark((prev) => !prev)}
+              className="text-sm border dark:border-gray-700 rounded-lg px-3 py-1 text-gray-900 dark:text-gray-100"
+              aria-label="Basculer le mode sombre"
+            >
+              {isDark ? "☀️" : "🌙"}
+            </button>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        <SearchBar onSearch={handleSearch} />
+        <RecentCities cities={recentCities} onSelect={handleSearch} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {loading && <LoadingState />}
+        {!loading && error && <ErrorState message={error} />}
+        {!loading && !error && data && (
+          <>
+            <CurrentWeatherCard data={data.current} unit={unit} />
+            <ForecastList forecastList={data.forecast.list} />
+            <TemperatureChart forecastList={data.forecast.list} />
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
