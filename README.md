@@ -2,7 +2,7 @@
 
 Un dashboard météo interactif construit avec React, permettant de consulter la météo actuelle et les prévisions à 5 jours pour n'importe quelle ville, avec géolocalisation automatique et visualisation graphique de l'évolution des températures.
 
-**🔗 Démo en ligne :** [weather-dashboard.vercel.app](https://weather-dashboard.vercel.app) *(remplace par ton URL exacte)*
+**🔗 Démo en ligne : https://weather-dashboard-rust-six.vercel.app/
 
 <!-- Insère ici tes captures d'écran ou ton GIF, par exemple : -->
 <!-- ![Aperçu du dashboard météo](./screenshot-light.png) -->
